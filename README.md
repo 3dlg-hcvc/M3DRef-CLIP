@@ -153,7 +153,7 @@ python train.py data={scanrefer/nr3d} experiment_name={any_string} +detector_pat
 python train.py data={scanrefer/nr3d} experiment_name={checkpoint_experiment_name} +ckpt_path={ckpt_file_path}
 
 # test a model from a checkpoint and save its predictions
-python test.py data={scanrefer/nr3d} data.evaluation.split={train/val/test} +ckpt_path={ckpt_file_path} pred_path={predictions_path}
+python test.py data={scanrefer/nr3d} data.inference.split={train/val/test} +ckpt_path={ckpt_file_path} pred_path={predictions_path}
 
 # evaluate predictions
 python evaluate.py data={scanrefer/nr3d} pred_path={predictions_path} data.evaluation.split={train/val/test}

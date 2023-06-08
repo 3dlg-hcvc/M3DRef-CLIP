@@ -49,6 +49,7 @@ venv.bak/
 dataset/scannetv2/scans
 *.p
 *.hdf5
+*.h5
 
 # Experiments
 output/
