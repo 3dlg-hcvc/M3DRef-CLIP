@@ -1,10 +1,8 @@
 import os
 import torch
 import numpy as np
-from tqdm import tqdm
 import random
 import math
-import h5py
 import MinkowskiEngine as ME
 from abc import abstractmethod
 from torch.utils.data import Dataset
@@ -18,23 +16,8 @@ class GeneralDataset(Dataset):
         # load language data from disk to memory
         self._load_language_data()
 
-        # load scene data from disk to memory
-        self._load_scene_data()
-
         # pack scene and language data
         self._pack_data_to_chunks()
-
-    def _open_hdf5(self):
-        self.multiview_data = h5py.File(self.data_cfg.scene_metadata.scene_multiview_file, "r", libver="latest")
-
-    def _load_scene_data(self):
-        scene_data_path = self.data_cfg.scene_dataset_path
-        self.all_scene_data = {}
-        for scene_id in tqdm(self.scene_ids, desc=f"Loading {self.split} data from disk"):
-            scene_path = os.path.join(scene_data_path, self.split, f"{scene_id}.pth")
-            scene_data = torch.load(scene_path)
-            scene_data["rgb"] = scene_data["rgb"].astype(np.float32) / 127.5 - 1  # scale rgb to [-1, 1]
-            self.all_scene_data[scene_id] = scene_data
 
     @abstractmethod
     def _load_language_data(self):
@@ -83,7 +66,11 @@ class GeneralDataset(Dataset):
     def __getitem__(self, index):
         data_dict = {}
         scene_id = self.scene_ids[self.chunk_scene_indices[index]]
-        scene_data = self.all_scene_data[scene_id]
+
+        scene_path = os.path.join(self.data_cfg.scene_dataset_path, self.split, f"{scene_id}.pth")
+        scene_data = torch.load(scene_path)
+        scene_data["rgb"] = scene_data["rgb"].astype(np.float32) / 127.5 - 1  # scale rgb to [-1, 1]
+
         scene_center_xyz = scene_data["xyz"].mean(axis=0)
 
         original_num_points = scene_data["xyz"].shape[0]
@@ -137,9 +124,7 @@ class GeneralDataset(Dataset):
         if self.data_cfg.point_features.use_normal:
             point_features = np.concatenate((point_features, point_normal), axis=1)
         if self.data_cfg.point_features.use_multiview:
-            if not hasattr(self, 'multiview_data'):
-                self._open_hdf5()
-            point_features = np.concatenate((point_features, self.multiview_data[scene_id][()][choices]), axis=1)
+            point_features = np.concatenate((point_features, scene_data["multiview_features"][choices]), axis=1)
 
         point_features = np.concatenate((point_features, data_dict["point_xyz"]), axis=1)
 

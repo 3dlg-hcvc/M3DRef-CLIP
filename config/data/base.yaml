@@ -4,7 +4,7 @@ data_root_path: ${project_root_path}/dataset
 
 dataloader:
   batch_size: 4
-  num_workers: 4
+  num_workers: 8
 
 inference:
   split: val

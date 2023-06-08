@@ -1,5 +1,6 @@
 import os
 import csv
+import h5py
 import json
 import torch
 import hydra
@@ -125,7 +126,7 @@ def get_aabbs(xyz, instance_ids):
     return aabb_corner_points, aabb_obj_ids
 
 
-def process_one_scene(scene, cfg, split, label_map, invalid_ids, valid_semantic_mapping):
+def process_one_scene(scene, cfg, split, label_map, invalid_ids, valid_semantic_mapping, multiview_feature_file):
     mesh_file_path = os.path.join(cfg.data.raw_scene_path, scene, scene + '_vh_clean_2.ply')
     agg_file_path = os.path.join(cfg.data.raw_scene_path, scene, scene + '.aggregation.json')
     seg_file_path = os.path.join(cfg.data.raw_scene_path, scene, scene + '_vh_clean_2.0.010000.segs.json')
@@ -157,6 +158,7 @@ def process_one_scene(scene, cfg, split, label_map, invalid_ids, valid_semantic_
 
     torch.save(
         {"xyz": xyz, "rgb": rgb, "normal": normal, "sem_labels": sem_labels,
+         "multiview_features": multiview_feature_file[scene],
          "instance_ids": object_ids, "aabb_obj_ids": aabb_obj_ids, "aabb_corner_xyz": aabb_corner_xyz},
         os.path.join(cfg.data.scene_dataset_path, split, f"{scene}.pth")
     )
@@ -171,6 +173,9 @@ def main(cfg):
     label_map = get_semantic_mapping_file(cfg.data.scene_metadata.label_mapping_file,
                                           cfg.data.scene_metadata.semantic_mapping_name)
 
+    multiview_file_path = cfg.data.scene_metadata.multiview_feature_file_path
+    h5_file = h5py.File(multiview_file_path, "r")
+
     for split in ("train", "val", "test"):
         output_path = os.path.join(cfg.data.scene_dataset_path, split)
         if os.path.exists(output_path):
@@ -184,11 +189,11 @@ def main(cfg):
             partial(
                 process_one_scene, cfg=cfg, split=split, label_map=label_map,
                 invalid_ids=cfg.data.scene_metadata.invalid_semantic_labels,
-                valid_semantic_mapping=cfg.data.scene_metadata.valid_semantic_mapping
+                valid_semantic_mapping=cfg.data.scene_metadata.valid_semantic_mapping, multiview_feature_file=h5_file
             ), split_list, chunksize=1, max_workers=max_workers
         )
         print(f"==> Complete. Saved at: {os.path.abspath(output_path)}\n")
-
+    h5_file.close()
 
 if __name__ == '__main__':
     main()

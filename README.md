@@ -87,8 +87,10 @@ Note: Both [ScanRefer](https://daveredrum.github.io/ScanRefer/) and [Nr3D](https
     │   │   │   │   ├── [scene_id].aggregation.json
     │   │   │   │   ├── [scene_id].txt
     ```
+2. Prepare the multiview feature `.h5` file, please follow instructions in 
 
-2. Pre-process the data, it converts original meshes and annotations to `.pth` data:
+
+3. Pre-process the data, it converts original meshes and annotations to `.pth` data:
     ```shell
     python dataset/scannetv2/preprocess_all_data.py data=scannetv2 +workers={cpu_count}
     ```
