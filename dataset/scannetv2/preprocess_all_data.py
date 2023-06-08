@@ -5,6 +5,7 @@ import torch
 import hydra
 import numpy as np
 import open3d as o3d
+from os import cpu_count
 from functools import partial
 from tqdm.contrib.concurrent import process_map
 
@@ -163,7 +164,8 @@ def process_one_scene(scene, cfg, split, label_map, invalid_ids, valid_semantic_
 
 @hydra.main(version_base=None, config_path="../../config", config_name="global_config")
 def main(cfg):
-    print("\nDefault: using all CPU cores.")
+    max_workers = cpu_count() if "workers" not in cfg else cfg.workers
+    print(f"\nUsing {max_workers} CPU threads.")
 
     # read semantic label mapping file
     label_map = get_semantic_mapping_file(cfg.data.scene_metadata.label_mapping_file,
@@ -183,7 +185,7 @@ def main(cfg):
                 process_one_scene, cfg=cfg, split=split, label_map=label_map,
                 invalid_ids=cfg.data.scene_metadata.invalid_semantic_labels,
                 valid_semantic_mapping=cfg.data.scene_metadata.valid_semantic_mapping
-            ), split_list, chunksize=1
+            ), split_list, chunksize=1, max_workers=max_workers
         )
         print(f"==> Complete. Saved at: {os.path.abspath(output_path)}\n")
 

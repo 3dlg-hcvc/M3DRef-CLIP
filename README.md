@@ -90,7 +90,7 @@ Note: Both [ScanRefer](https://daveredrum.github.io/ScanRefer/) and [Nr3D](https
 
 2. Pre-process the data, it converts original meshes and annotations to `.pth` data:
     ```shell
-    python dataset/scannetv2/preprocess_all_data.py data=scannetv2  # all CPU cores will be used for multi-processing by default
+    python dataset/scannetv2/preprocess_all_data.py data=scannetv2 +workers={cpu_count}
     ```
 
 3. Pre-process the multiview features from ENet: Please refer to the 5th instruction in [D3Net's repo](https://github.com/daveredrum/D3Net#data-preparation) to generate `enet_feats_maxpool.hdf5` or directly [download](https://aspis.cmpt.sfu.ca/projects/m3dref-clip/data/enet_feats_maxpool.hdf5) it, then put it under `m3drefclip/dataset/scannetv2`
