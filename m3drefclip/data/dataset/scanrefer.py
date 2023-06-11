@@ -6,7 +6,7 @@ import json
 
 
 class ScanRefer(GeneralDataset):
-    def __int__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
     def _load_language_data(self):
