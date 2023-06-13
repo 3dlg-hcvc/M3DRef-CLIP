@@ -35,7 +35,7 @@ conda install -c fvcore -c iopath -c conda-forge fvcore iopath
 conda install pytorch3d -c pytorch3d
 
 # install MinkowskiEngine with dependencies
-conda install openblas-devel --no-deps -c anaconda
+conda install -c anaconda openblas
 pip install -U git+https://github.com/NVIDIA/MinkowskiEngine -v --no-deps \
 --install-option="--blas_include_dirs=${CONDA_PREFIX}/include" --install-option="--blas=openblas"
 
