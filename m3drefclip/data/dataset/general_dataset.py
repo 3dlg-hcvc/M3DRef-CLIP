@@ -3,6 +3,7 @@ import torch
 import numpy as np
 import random
 import math
+import h5py
 import MinkowskiEngine as ME
 from abc import abstractmethod
 from torch.utils.data import Dataset
@@ -18,6 +19,9 @@ class GeneralDataset(Dataset):
 
         # pack scene and language data
         self._pack_data_to_chunks()
+
+    def _open_hdf5(self):
+        self.multiview_data = h5py.File(self.data_cfg.scene_metadata.scene_multiview_file, "r", libver="latest")
 
     @abstractmethod
     def _load_language_data(self):
@@ -124,7 +128,9 @@ class GeneralDataset(Dataset):
         if self.data_cfg.point_features.use_normal:
             point_features = np.concatenate((point_features, point_normal), axis=1)
         if self.data_cfg.point_features.use_multiview:
-            point_features = np.concatenate((point_features, scene_data["multiview_features"][choices]), axis=1)
+            if not hasattr(self, 'multiview_data'):
+                self._open_hdf5()
+            point_features = np.concatenate((point_features, self.multiview_data[scene_id][()][choices]), axis=1)
 
         point_features = np.concatenate((point_features, data_dict["point_xyz"]), axis=1)
 

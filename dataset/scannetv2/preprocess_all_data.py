@@ -1,6 +1,5 @@
 import os
 import csv
-import h5py
 import json
 import torch
 import hydra
@@ -133,8 +132,6 @@ def process_one_scene(scene, cfg, split, label_map, invalid_ids, valid_semantic_
     seg_file_path = os.path.join(cfg.data.raw_scene_path, scene, scene + '_vh_clean_2.0.010000.segs.json')
     meta_file_path = os.path.join(cfg.data.raw_scene_path, scene, scene + '.txt')
 
-    h5_file = h5py.File(cfg.data.scene_metadata.multiview_feature_file_path, "r")
-
     # read meta_file
     axis_align_matrix = read_axis_align_matrix(meta_file_path)
 
@@ -161,12 +158,9 @@ def process_one_scene(scene, cfg, split, label_map, invalid_ids, valid_semantic_
 
     torch.save(
         {"xyz": xyz, "rgb": rgb, "normal": normal, "sem_labels": sem_labels,
-         "multiview_features": h5_file[scene][()],
          "instance_ids": object_ids, "aabb_obj_ids": aabb_obj_ids, "aabb_corner_xyz": aabb_corner_xyz},
         os.path.join(cfg.data.scene_dataset_path, split, f"{scene}.pth")
     )
-
-    h5_file.close()
 
 
 @hydra.main(version_base=None, config_path="../../config", config_name="global_config")
