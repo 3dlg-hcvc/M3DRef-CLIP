@@ -68,21 +68,24 @@ class RefCELoss(pl.LightningModule):
             size=(batch_size, self.chunk_size, self.max_num_proposals), dtype=torch.float32, device=self.device
         )
         gt_aabb_min_max_bounds_filtered = torch.empty(
-            size=(batch_size, self.chunk_size, self.max_num_proposals, 2, 3), dtype=torch.float32, device=self.device
+            size=(batch_size, self.chunk_size, 2, 3), dtype=torch.float32, device=self.device
         )
         for batch_i in range(batch_size):
             aabb_start_idx = gt_aabb_offset[batch_i]
             aabb_end_idx = gt_aabb_offset[batch_i + 1]
-            for lang_i in range(self.chunk_size):
-                single_aabb_mask = gt_target_objs_mask[lang_i, aabb_start_idx:aabb_end_idx]
-                # there should be only one GT aabb
-                gt_aabb_min_max_bounds_filtered[batch_i, lang_i] = \
-                gt_aabb_min_max_bounds[aabb_start_idx:aabb_end_idx][single_aabb_mask][0].expand(
-                    size=(self.max_num_proposals, -1, -1))
+            # there should be only one GT aabb
+            gt_aabb_min_max_bounds_filtered[batch_i] = torch.einsum(
+                "abc,da->dbc", gt_aabb_min_max_bounds[aabb_start_idx:aabb_end_idx],
+                gt_target_objs_mask[:, aabb_start_idx:aabb_end_idx].float()
+            )
+            # for lang_i in range(self.chunk_size):
+            #     single_aabb_mask = gt_target_objs_mask[lang_i, aabb_start_idx:aabb_end_idx]
+            #     # there should be only one GT aabb
+            #     gt_aabb_min_max_bounds_filtered[batch_i, lang_i] = gt_aabb_min_max_bounds[aabb_start_idx:aabb_end_idx][single_aabb_mask][0]
 
         ious = get_batch_aabb_pair_ious(
             pred_aabb_min_max_bounds.unsqueeze(1).expand(size=(-1, self.chunk_size, -1, -1, -1)).reshape(-1, 2, 3),
-            gt_aabb_min_max_bounds_filtered.reshape(-1, 2, 3)
+            gt_aabb_min_max_bounds_filtered.unsqueeze(2).expand(size=(-1, -1, self.max_num_proposals, -1, -1)).reshape(-1, 2, 3)
         ).reshape(batch_size, self.chunk_size, -1)
 
         iou, index = ious.max(dim=2)
@@ -90,4 +93,3 @@ class RefCELoss(pl.LightningModule):
         passed_threshold[iou >= self.iou_threshold] = 1
         output_dict["gt_labels"].scatter_(2, index.unsqueeze(-1), passed_threshold.unsqueeze(-1))
         return self.criterion(pred_scores, output_dict["gt_labels"].flatten(start_dim=0, end_dim=1))
-

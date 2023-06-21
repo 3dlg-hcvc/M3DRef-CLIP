@@ -88,7 +88,7 @@ class M3DRefCLIP(pl.LightningModule):
 
         output_dict["aabb_features"] = common_ops.convert_sparse_tensor_to_dense(
             aabb_features, output_dict["proposal_batch_offsets"],
-            self.hparams.cfg.model.network.max_num_proposals
+            self.hparams.cfg.model.network.max_num_proposals,
         )
 
         output_dict["pred_aabb_min_max_bounds"] = common_ops.convert_sparse_tensor_to_dense(
