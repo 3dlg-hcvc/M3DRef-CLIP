@@ -10,20 +10,57 @@ class SinglePairContrastiveLoss(pl.LightningModule):
         self.split_batch = split_batch
 
     def forward(self, aabb_features, sentence_features, gt_labels, multiple_gt=False):
-        aabb_features_filtered = torch.einsum("abc,adb->adc", aabb_features, gt_labels).flatten(0, 1)
+        gt_label_indices = torch.where(gt_labels)
 
-        # for multiple gt labels, it takes the average of their features as the final feature
-        gt_count = torch.count_nonzero(gt_labels, dim=2).flatten(0, 1)
-        gt_mask = gt_count != 0
+        aabb_features_filtered = aabb_features[gt_label_indices[0], gt_label_indices[2]]
+        sentence_features_filtered = sentence_features.reshape(
+            gt_labels.shape[0], gt_labels.shape[1], -1
+        )[gt_label_indices[0], gt_label_indices[1]]
 
-        if not gt_mask.any():
-            return 0.0
+        # # gt_labels_flatten = torch.empty(size=)
+        # if not gt_mask.any():
+        #     return 0.0
+        #
+        # if not multiple_gt:
+        #     aabb_features_filtered = torch.einsum("abc,adb->adc", aabb_features, gt_labels)[gt_mask].flatten(0, 1)
+        # else:
+        #     # aabb_features_filtered = torch.empty(
+        #     #     size=(gt_count.sum(), aabb_features.shape[-1]), dtype=aabb_features.dtype, device=self.device
+        #     # )
+        #
+        #
+        #     aabb_features_filtered = aabb_features[gt_indices].flatten(0, 1)
+        #
+        #
+        #     raise NotImplementedError
 
-        aabb_features_filtered = aabb_features_filtered[gt_mask] / gt_count[gt_mask].unsqueeze(-1)
+        # batch_size, lang_chunk_size = aabb_features_filtered.shape[0:2]
+
+        # TODO: refactor code
+
+        # if self.split_batch:
+        #     sentence_features_batch = sentence_features.reshape(batch_size, lang_chunk_size, -1)
+        #     total_loss = 0
+        #     for batch_i in range(batch_size):
+        #         # normalized features
+        #         normalized_aabb_features = nn.functional.normalize(aabb_features_filtered.reshape(batch_size, lang_chunk_size, -1)[batch_i], dim=1)
+        #         normalized_sentence_features = nn.functional.normalize(sentence_features_batch[batch_i], dim=1)
+        #
+        #         logit_scale = self.logit_scale.exp()
+        #         logits_1 = logit_scale * normalized_aabb_features @ normalized_sentence_features.t()
+        #         logits_2 = logit_scale * normalized_sentence_features @ normalized_aabb_features.t()
+        #
+        #         labels = torch.arange(lang_chunk_size, device=self.device, dtype=torch.uint8)  # max 255
+        #         loss_a = nn.functional.cross_entropy(logits_1, labels)
+        #         loss_b = nn.functional.cross_entropy(logits_2, labels)
+        #         total_loss += (loss_a + loss_b) / 2
+        #
+        #     return total_loss / batch_size
+        # else:
 
         # normalized features
         normalized_aabb_features = nn.functional.normalize(aabb_features_filtered, dim=1)
-        normalized_sentence_features = nn.functional.normalize(sentence_features[gt_mask], dim=1)
+        normalized_sentence_features = nn.functional.normalize(sentence_features_filtered, dim=1)
 
         logit_scale = self.logit_scale.exp()
         logits_1 = logit_scale * normalized_aabb_features @ normalized_sentence_features.t()
