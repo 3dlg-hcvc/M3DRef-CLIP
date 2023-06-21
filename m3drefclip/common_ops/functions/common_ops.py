@@ -217,7 +217,7 @@ def convert_sparse_tensor_to_dense(sparse_info, idx_offsets, max_num_aabbs):
         size=(idx_offsets.shape[0] - 1, max_num_aabbs) + sparse_info.shape[1:],
         dtype=sparse_info.dtype, device=sparse_info.device
     )
-    for i in range(batch_size):
+    for i in range(idx_offsets.shape[0] - 1):
         aabb_start_idx = idx_offsets[i]
         aabb_end_idx = idx_offsets[i + 1]
         dense_aabb_info[i][0:aabb_end_idx - aabb_start_idx] = sparse_info[aabb_start_idx:aabb_end_idx]
