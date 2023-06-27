@@ -49,12 +49,17 @@ class M3DRefCLIP(pl.LightningModule):
 
         # self.text_encoder = hydra.utils.instantiate(cfg.model.network.clip_word_encoder, clip_model=self.clip_model)
         self.text_encoder = hydra.utils.instantiate(cfg.model.network.gru_text_encoder)
+        # self.match_module = MatchModule(
+        #     **cfg.model.network.matching_module,
+        #     input_channel=cfg.model.network.detector.output_channel *
+        #                   self.hparams.cfg.model.network.use_3d_features +
+        #                   self.hparams.cfg.model.network.use_2d_feature *
+        #                   self.hparams.cfg.model.network.clip_img_encoder.output_channel
+        # )
+
         self.match_module = MatchModule(
             **cfg.model.network.matching_module,
-            input_channel=cfg.model.network.detector.output_channel *
-                          self.hparams.cfg.model.network.use_3d_features +
-                          self.hparams.cfg.model.network.use_2d_feature *
-                          self.hparams.cfg.model.network.clip_img_encoder.output_channel
+            input_channel=cfg.model.network.detector.output_channel
         )
 
         self.contrastive_loss = hydra.utils.instantiate(cfg.model.loss.contrastive_loss)
