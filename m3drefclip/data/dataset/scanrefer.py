@@ -1,8 +1,9 @@
 from m3drefclip.data.dataset.general_dataset import GeneralDataset
 import numpy as np
 import torch
-import clip
+# import clip
 import json
+import pickle
 
 
 class ScanRefer(GeneralDataset):
