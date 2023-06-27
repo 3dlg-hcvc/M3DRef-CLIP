@@ -6,7 +6,7 @@ import json
 import os
 
 
-def generate_gt(split, lang_input_path, scene_root_path):
+def generate_gt_scanrefer(split, lang_input_path, scene_root_path):
     gt_dict = {}
     scene_ids = {}
     with open(lang_input_path, "r") as f:
@@ -18,12 +18,55 @@ def generate_gt(split, lang_input_path, scene_root_path):
         scene_data = torch.load(os.path.join(scene_root_path, split, f"{scene_id}.pth"))
         if "object_ids" not in query:
             # for ScanRefer and Nr3D
-            object_ids = [int(query["object_id"])]
+            object_ids = [object_id]
         corners = scene_data["aabb_corner_xyz"][np.in1d(scene_data["aabb_obj_ids"], np.array(object_ids))]
         aabb_min_max_bound = np.stack((corners.min(1), corners.max(1)), axis=1)
         gt_dict[(scene_id, object_id, int(query["ann_id"]))] = {
             "aabb_bound": aabb_min_max_bound,
             "eval_type": query["eval_type"]
+        }
+    scene_ids = list(scene_ids.keys())
+    return gt_dict, scene_ids
+
+
+def generate_gt_nr3d(split, lang_input_path, scene_root_path):
+    gt_dict = {}
+    scene_ids = {}
+    tmp_ann_id_count = {}
+    raw_data = []
+    with open(lang_input_path, "r") as f:
+        csv_data = csv.DictReader(f)
+        for row in csv_data:
+            raw_data.append(row)
+
+    for query in tqdm(raw_data, desc="Initializing ground truths"):
+        scene_id = query["scan_id"]
+        scene_ids[scene_id] = True
+        object_id = int(query["target_id"])
+
+        scene_obj_key = (scene_id, object_id)
+        if scene_obj_key not in tmp_ann_id_count:
+            tmp_ann_id_count[scene_obj_key] = 0
+        else:
+            tmp_ann_id_count[scene_obj_key] += 1
+
+        scene_data = torch.load(os.path.join(scene_root_path, split, f"{scene_id}.pth"))
+        object_ids = [object_id]
+        corners = scene_data["aabb_corner_xyz"][np.in1d(scene_data["aabb_obj_ids"], np.array(object_ids))]
+        aabb_min_max_bound = np.stack((corners.min(1), corners.max(1)), axis=1)
+
+        if bool(item["is_easy"]) and bool(item["is_view_dep"]):
+            eval_type = "easy_dep"
+        elif bool(item["is_easy"]):
+            eval_type = "easy_indep"
+        elif bool(item["is_view_dep"]):
+            eval_type = "hard_dep"
+        else:
+            eval_type = "hard-indep"
+
+        gt_dict[(scene_id, object_id, tmp_ann_id_count[scene_obj_key])] = {
+            "aabb_bound": aabb_min_max_bound,
+            "eval_type": eval_type
         }
     scene_ids = list(scene_ids.keys())
     return gt_dict, scene_ids
@@ -49,7 +92,14 @@ def main(cfg):
 
     # prepare gt
     lang_input_path = getattr(cfg.data.lang_metadata, f"{split}_language_data")
-    gt_data, scene_ids = generate_gt(split, lang_input_path, cfg.data.scene_dataset_path)
+
+    if cfg.lang_dataset == "ScanRefer":
+        gt_data, scene_ids = generate_gt_scanrefer(split, lang_input_path, cfg.data.scene_dataset_path)
+    elif cfg.lang_dataset == "Nr3D":
+        gt_data, scene_ids = generate_gt_nr3d(split, lang_input_path, cfg.data.scene_dataset_path)
+    else:
+        raise NotImplementedError
+
 
     # prepare predictions
     pred_data = parse_prediction(scene_ids, cfg.pred_path)
