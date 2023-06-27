@@ -25,7 +25,13 @@ class ScanRefer(GeneralDataset):
             scene_ids[item["scene_id"]] = True
             if item["scene_id"] not in self.language_data:
                 self.language_data[item["scene_id"]] = []
-
+            word_embeddings = torch.empty(
+                size=(len(item["token"]), self.data_cfg.lang_metadata.glove_embedding_len), dtype=torch.float32
+            )
+            for token_i, token in enumerate(item["token"]):
+                word_embeddings[token_i] = torch.from_numpy(
+                    raw_glove[token] if token in raw_glove else raw_glove["unk"]
+                )
             object_name = item["object_name"].replace("_", " ")
             self.language_data[item["scene_id"]].append(
                 {
@@ -33,7 +39,8 @@ class ScanRefer(GeneralDataset):
                     "object_name": object_name,
                     "ann_id": int(item["ann_id"]),
                     "eval_type": item["eval_type"],
-                    "clip_tokens": clip.tokenize(item["description"].strip(), truncate=True)[0]
+                    # "clip_tokens": clip.tokenize(item["description"].strip(), truncate=True)[0]
+                    "word_embeddings": word_embeddings
                 }
             )
         self.scene_ids = list(scene_ids.keys())
@@ -52,7 +59,8 @@ class ScanRefer(GeneralDataset):
         data_dict["gt_target_obj_id_mask"] = np.zeros(
             shape=(self.data_cfg.chunk_size, data_dict["gt_aabb_obj_ids"].shape[0]), dtype=bool
         )
-        data_dict["clip_tokens"] = torch.empty(size=(self.data_cfg.chunk_size, 77), dtype=torch.int32)
+        # data_dict["clip_tokens"] = torch.empty(size=(self.data_cfg.chunk_size, 77), dtype=torch.int32)
+        data_dict["word_embeddings"] = []
         data_dict["eval_type"] = []
 
         for i, index in enumerate(language_data_indices):
@@ -61,6 +69,8 @@ class ScanRefer(GeneralDataset):
             data_dict["ann_id"][i] = data["ann_id"]
             data_dict["object_id"][i] = data["object_id"]
             data_dict["gt_target_obj_id_mask"][i] = np.in1d(data_dict["gt_aabb_obj_ids"], data["object_id"])
-            data_dict["clip_tokens"][i] = data["clip_tokens"]
+            # data_dict["clip_tokens"][i] = data["clip_tokens"]
             data_dict["eval_type"].append(data["eval_type"])
+            data_dict["word_embeddings"].append(data["word_embeddings"])
+            data_dict["sentence_len"][i] = len(data["word_embeddings"])
         return data_dict

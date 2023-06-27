@@ -37,18 +37,18 @@ class M3DRefCLIP(pl.LightningModule):
         else:
             raise NotImplementedError
 
-        self.clip_model = clip.load(cfg.model.network.clip_model, device=self.device)[0]
+        # self.clip_model = clip.load(cfg.model.network.clip_model, device=self.device)[0]
 
-        # freeze CLIP
-        for param in self.clip_model.parameters():
-            param.requires_grad = False
+        # # freeze CLIP
+        # for param in self.clip_model.parameters():
+        #     param.requires_grad = False
 
-        if self.hparams.cfg.model.network.use_2d_feature:
-            self.object_renderer = ObjectRenderer(**cfg.model.network.object_renderer)
-            self.clip_image = CLIPImageEncoder(clip_model=self.clip_model, **cfg.model.network.clip_img_encoder)
+        # if self.hparams.cfg.model.network.use_2d_feature:
+        #     self.object_renderer = ObjectRenderer(**cfg.model.network.object_renderer)
+        #     self.clip_image = CLIPImageEncoder(clip_model=self.clip_model, **cfg.model.network.clip_img_encoder)
 
-        self.text_encoder = hydra.utils.instantiate(cfg.model.network.clip_word_encoder, clip_model=self.clip_model)
-
+        # self.text_encoder = hydra.utils.instantiate(cfg.model.network.clip_word_encoder, clip_model=self.clip_model)
+        self.text_encoder = hydra.utils.instantiate(cfg.model.network.gru_text_encoder)
         self.match_module = MatchModule(
             **cfg.model.network.matching_module,
             input_channel=cfg.model.network.detector.output_channel *
@@ -66,25 +66,26 @@ class M3DRefCLIP(pl.LightningModule):
     def forward(self, data_dict):
         output_dict = self.detector(data_dict)
         batch_size = len(data_dict["scene_id"])
-        if self.hparams.cfg.model.network.use_3d_features:
-            aabb_features = output_dict["aabb_features"]
-        else:
-            aabb_features = torch.empty(
-                size=(output_dict["aabb_features"].shape[0], 0),
-                dtype=output_dict["aabb_features"].dtype, device=self.device
-            )
-        data_dict["lang_attention_mask"] = None
-        if self.hparams.cfg.model.network.use_2d_feature:
-            rendered_imgs = self.object_renderer(data_dict, output_dict)
-            img_features = self.clip_image(rendered_imgs.permute(dims=(0, 3, 1, 2)))
-            views = len(self.hparams.cfg.model.network.object_renderer.eye)
-            aabb_img_features = torch.nn.functional.avg_pool1d(
-                img_features.permute(1, 0), kernel_size=views, stride=views
-            ).permute(1, 0)
-            # TODO: adjust mask
-            # data_dict["lang_attention_mask"] = data_dict["lang_attention_mask"][:, :77]  # CLIP context length
-            # concatenate 2D and 3D features
-            aabb_features = torch.nn.functional.normalize(torch.cat((aabb_features, aabb_img_features), dim=1), dim=1)
+        aabb_features = output_dict["aabb_features"]
+        # if self.hparams.cfg.model.network.use_3d_features:
+        #     aabb_features = output_dict["aabb_features"]
+        # else:
+        #     aabb_features = torch.empty(
+        #         size=(output_dict["aabb_features"].shape[0], 0),
+        #         dtype=output_dict["aabb_features"].dtype, device=self.device
+        #     )
+        # data_dict["lang_attention_mask"] = None
+        # if self.hparams.cfg.model.network.use_2d_feature:
+        #     rendered_imgs = self.object_renderer(data_dict, output_dict)
+        #     img_features = self.clip_image(rendered_imgs.permute(dims=(0, 3, 1, 2)))
+        #     views = len(self.hparams.cfg.model.network.object_renderer.eye)
+        #     aabb_img_features = torch.nn.functional.avg_pool1d(
+        #         img_features.permute(1, 0), kernel_size=views, stride=views
+        #     ).permute(1, 0)
+        #     # TODO: adjust mask
+        #     # data_dict["lang_attention_mask"] = data_dict["lang_attention_mask"][:, :77]  # CLIP context length
+        #     # concatenate 2D and 3D features
+        #     aabb_features = torch.nn.functional.normalize(torch.cat((aabb_features, aabb_img_features), dim=1), dim=1)
 
         output_dict["aabb_features"] = common_ops.convert_sparse_tensor_to_dense(
             aabb_features, output_dict["proposal_batch_offsets"],

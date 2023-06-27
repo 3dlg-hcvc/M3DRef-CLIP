@@ -4,6 +4,7 @@ import lightning.pytorch as pl
 from importlib import import_module
 from torch.utils.data import DataLoader
 from torch.utils.data._utils.collate import default_collate
+from torch.nn.utils.rnn import pack_sequence
 
 
 class DataModule(pl.LightningDataModule):
@@ -44,7 +45,7 @@ def _collate_fn(batch):
     data_dict = {}
 
     # default collation
-    default_collate_item_names = ("scene_id", "object_id", "ann_id", "clip_tokens", "scene_center_xyz")
+    default_collate_item_names = ("scene_id", "object_id", "ann_id", "scene_center_xyz")
     default_collate_data = []
 
     point_count_total = 0
@@ -56,6 +57,8 @@ def _collate_fn(batch):
     data_dict["all_point_count_offsets"] = torch.zeros(size=(len(batch) + 1,), dtype=torch.int32)
     data_dict["eval_type"] = []
 
+    tmp_word_embeddings_list = []
+    max_sentence_len = 0
     vert_batch_ids = []
 
     for i, b in enumerate(batch):
@@ -69,6 +72,11 @@ def _collate_fn(batch):
         aabb_count_total += b["gt_aabb_min_max_bounds"].shape[0]
         data_dict["point_count_offsets"][i + 1] = point_count_total
         data_dict["aabb_count_offsets"][i + 1] = aabb_count_total
+
+        tmp_word_embeddings_list.extend(b["word_embeddings"])
+        if max_sentence_len < b["sentence_len"].max():
+            max_sentence_len = b["sentence_len"].max()
+
         data_dict["eval_type"].append(b["eval_type"])
         vert_batch_ids.append(
             torch.full((b["point_xyz"].shape[0],), fill_value=i, dtype=torch.uint8)
@@ -77,6 +85,11 @@ def _collate_fn(batch):
     data_dict["vert_batch_ids"] = torch.cat(vert_batch_ids, dim=0)
     data_dict.update(default_collate(default_collate_data))
     lang_chunk_size = data_dict["ann_id"].shape[1]
+
+    data_dict["word_embeddings"] = pack_sequence(sequences=tmp_word_embeddings_list, enforce_sorted=False)
+
+    data_dict["lang_attention_mask"] = torch.ones(size=(len(batch), lang_chunk_size, max_sentence_len),
+                                                  dtype=torch.bool)
 
     # sparse collation
     data_dict["point_xyz"] = torch.empty(size=(point_count_total, 3), dtype=torch.float32)
@@ -139,7 +152,13 @@ def _collate_fn(batch):
         data_dict["gt_target_obj_id_mask"][batch_aabbs_start_idx:batch_aabbs_end_idx] = \
             torch.from_numpy(b["gt_target_obj_id_mask"]).permute(dims=(1, 0))
 
+        for j in range(lang_chunk_size):
+            data_dict["lang_attention_mask"][i][j][0:b["sentence_len"][j]] = False
+
     data_dict["instance_num_point"] = torch.cat(instance_num_point, dim=0)
+
+    data_dict["lang_attention_mask"] = data_dict["lang_attention_mask"]\
+        .flatten(start_dim=0, end_dim=1).unsqueeze(1).unsqueeze(1)
 
     data_dict["voxel_xyz"], data_dict["voxel_features"] = ME.utils.sparse_collate(
         coords=voxel_xyz_list, feats=voxel_features_list
