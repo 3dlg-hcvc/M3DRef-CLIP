@@ -5,28 +5,25 @@ from m3drefclip.util.utils import get_batch_aabb_pair_ious
 from m3drefclip.evaluation.general_evaluator import GeneralEvaluator
 
 
-# TODO
-IOU_THRESHOLD = 0.95  # referit3d uses GT boxes, no iou here
+IOU_THRESHOLD = 0.9  # referit3d uses GT boxes, a dummy iou here
+
 
 class ReferIt3DEvaluator(GeneralEvaluator):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.evaluation_types = {"easy_dep": 0, "easy_indep": 1, "hard_dep": 2, "hard-indep": 3}
+        self.evaluation_types = {"easy_dep": 0, "easy_indep": 1, "hard_dep": 2, "hard_indep": 3}
         self.evaluation_types_comb = {"easy": (0, 1), "hard": (2, 3), "view_dep": (0, 2), "view_indep": (1, 3)}
 
     def _print_results(self, results):
-        print(f"{'=' * 43}")
-        print("{0:<12}{1:<12}{2:<12}{3:<12}".format("easy", "hard", "view-dep", "view-indep"))
-        print(f"{'-' * 43}")
-        line_1_str = '{:<12}'.format("0.25")
+        print(f"{'=' * 55}")
+        print("{0:<12}{1:<12}{2:<12}{3:<12}{4:<12}".format("easy", "hard", "view-dep", "view-indep", "overall"))
+        print(f"{'-' * 55}")
+        line_1_str = ''
         for sub_group_type, score in results.items():
             line_1_str += '{:<12.1f}'.format(score * 100)
         print(line_1_str)
-        print(f"{'=' * 43}")
-
-    def _set_ground_truths_from_files(self, path):
-        raise NotImplementedError
+        print(f"{'=' * 55}")
 
     def evaluate(self, predictions):
         all_gt_info_len = len(self.ground_truths)

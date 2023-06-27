@@ -27,9 +27,6 @@ class ScanReferEvaluator(GeneralEvaluator):
         print(line_2_str)
         print(f"{'=' * 43}")
 
-    def _set_ground_truths_from_files(self, path):
-        raise NotImplementedError
-
     def evaluate(self, predictions):
         all_gt_info_len = len(self.ground_truths)
         eval_type_mask = np.empty(all_gt_info_len, dtype=bool)

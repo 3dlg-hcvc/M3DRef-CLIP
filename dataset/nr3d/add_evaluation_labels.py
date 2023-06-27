@@ -18,7 +18,6 @@ def decode_stimulus_string(s):
     else:
         scene_id, instance_label, n_objects, target_id, distractors_ids = \
             s.split('-', maxsplit=4)
-
     instance_label = instance_label.replace('_', ' ')
     n_objects = int(n_objects)
     target_id = int(target_id)

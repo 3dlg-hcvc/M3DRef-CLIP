@@ -38,14 +38,16 @@ class Nr3D(GeneralDataset):
             if item["scan_id"] not in self.language_data:
                 self.language_data[item["scan_id"]] = []
 
-            if bool(item["is_easy"]) and bool(item["is_view_dep"]):
+            is_easy = item["is_easy"] == "True"
+            is_view_dep = item["is_view_dep"] == "True"
+            if is_easy and is_view_dep:
                 eval_type = "easy_dep"
-            elif bool(item["is_easy"]):
+            elif is_easy:
                 eval_type = "easy_indep"
-            elif bool(item["is_view_dep"]):
+            elif is_view_dep:
                 eval_type = "hard_dep"
             else:
-                eval_type = "hard-indep"
+                eval_type = "hard_indep"
             self.language_data[item["scan_id"]].append(
                 {
                     "object_id": int(item["target_id"]),

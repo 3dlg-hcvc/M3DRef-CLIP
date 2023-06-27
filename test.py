@@ -24,7 +24,7 @@ def main(cfg):
 
     # check the checkpoint
     assert cfg.ckpt_path is not None, "Error: Checkpoint path is not provided."
-    assert os.path.exists(cfg.ckpt_path), f"Error: Checkpoint path {cfg.ckpt_path} does not exists."
+    assert os.path.exists(cfg.ckpt_path), f"Error: Checkpoint path {cfg.ckpt_path} does not exist."
 
     # start inference
     trainer.test(model=model, datamodule=data_module, ckpt_path=cfg.ckpt_path)

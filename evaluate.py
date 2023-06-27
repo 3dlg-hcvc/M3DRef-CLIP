@@ -56,14 +56,16 @@ def generate_gt_nr3d(split, lang_input_path, scene_root_path):
         corners = scene_data["aabb_corner_xyz"][np.in1d(scene_data["aabb_obj_ids"], np.array(object_ids))]
         aabb_min_max_bound = np.stack((corners.min(1), corners.max(1)), axis=1)
 
-        if bool(query["is_easy"]) and bool(query["is_view_dep"]):
+        is_easy = query["is_easy"] == "True"
+        is_view_dep = query["is_view_dep"] == "True"
+        if is_easy and is_view_dep:
             eval_type = "easy_dep"
-        elif bool(query["is_easy"]):
+        elif is_easy:
             eval_type = "easy_indep"
-        elif bool(query["is_view_dep"]):
+        elif is_view_dep:
             eval_type = "hard_dep"
         else:
-            eval_type = "hard-indep"
+            eval_type = "hard_indep"
 
         gt_dict[(scene_id, object_id, tmp_ann_id_count[scene_obj_key])] = {
             "aabb_bound": aabb_min_max_bound,
@@ -94,6 +96,8 @@ def main(cfg):
     # prepare gt
     lang_input_path = getattr(cfg.data.lang_metadata, f"{split}_language_data")
 
+    assert os.path.exists(cfg.pred_path), f"Error: Predictions file path {cfg.pred_path} does not exist."
+
     if cfg.data.lang_dataset == "ScanRefer":
         gt_data, scene_ids = generate_gt_scanrefer(split, lang_input_path, cfg.data.scene_dataset_path)
     elif cfg.data.lang_dataset == "Nr3D":
@@ -101,14 +105,13 @@ def main(cfg):
     else:
         raise NotImplementedError
 
-
     # prepare predictions
     pred_data = parse_prediction(scene_ids, cfg.pred_path)
 
     evaluator = hydra.utils.instantiate(cfg.data.evaluator, verbose=True)
     evaluator.set_ground_truths(gt_data)
 
-    _, _ = evaluator.evaluate(pred_data)
+    _ = evaluator.evaluate(pred_data)
 
 
 if __name__ == '__main__':

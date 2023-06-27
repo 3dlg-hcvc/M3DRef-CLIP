@@ -46,7 +46,7 @@ def main(cfg):
 
     # check the checkpoint
     if cfg.ckpt_path is not None:
-        assert os.path.exists(cfg.ckpt_path), "Error: Checkpoint path does not exists."
+        assert os.path.exists(cfg.ckpt_path), "Error: Checkpoint path does not exist."
 
     # start training
     trainer.fit(model=model, datamodule=data_module, ckpt_path=cfg.ckpt_path)

@@ -14,9 +14,6 @@ class GeneralEvaluator(ABC):
     def set_ground_truths(self, ground_truths):
         self.ground_truths = ground_truths
 
-    @abstractmethod
-    def _set_ground_truths_from_files(self, file_path):
-        pass
 
     @abstractmethod
     def _print_results(self, *args, **kwargs):
