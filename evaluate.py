@@ -56,11 +56,11 @@ def generate_gt_nr3d(split, lang_input_path, scene_root_path):
         corners = scene_data["aabb_corner_xyz"][np.in1d(scene_data["aabb_obj_ids"], np.array(object_ids))]
         aabb_min_max_bound = np.stack((corners.min(1), corners.max(1)), axis=1)
 
-        if bool(item["is_easy"]) and bool(item["is_view_dep"]):
+        if bool(query["is_easy"]) and bool(query["is_view_dep"]):
             eval_type = "easy_dep"
-        elif bool(item["is_easy"]):
+        elif bool(query["is_easy"]):
             eval_type = "easy_indep"
-        elif bool(item["is_view_dep"]):
+        elif bool(query["is_view_dep"]):
             eval_type = "hard_dep"
         else:
             eval_type = "hard-indep"
