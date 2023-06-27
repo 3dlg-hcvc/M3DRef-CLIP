@@ -93,9 +93,9 @@ def main(cfg):
     # prepare gt
     lang_input_path = getattr(cfg.data.lang_metadata, f"{split}_language_data")
 
-    if cfg.lang_dataset == "ScanRefer":
+    if cfg.data.lang_dataset == "ScanRefer":
         gt_data, scene_ids = generate_gt_scanrefer(split, lang_input_path, cfg.data.scene_dataset_path)
-    elif cfg.lang_dataset == "Nr3D":
+    elif cfg.data.lang_dataset == "Nr3D":
         gt_data, scene_ids = generate_gt_nr3d(split, lang_input_path, cfg.data.scene_dataset_path)
     else:
         raise NotImplementedError
