@@ -18,7 +18,8 @@ class ScanRefer(GeneralDataset):
         file_path = getattr(self.data_cfg.lang_metadata, f"{self.split}_language_data")
         with open(file_path, "r") as f:
             raw_data = json.load(f)
-
+        with open(self.data_cfg.lang_metadata.glove_path, "rb") as f:
+            raw_glove = pickle.load(f)
         self.language_data = {}
         scene_ids = {}
         for item in raw_data:
