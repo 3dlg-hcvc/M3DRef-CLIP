@@ -222,11 +222,3 @@ def convert_sparse_tensor_to_dense(sparse_info, idx_offsets, max_num_aabbs):
         aabb_end_idx = idx_offsets[i + 1]
         dense_aabb_info[i][0:aabb_end_idx - aabb_start_idx] = sparse_info[aabb_start_idx:aabb_end_idx]
     return dense_aabb_info
-
-# def convert_sparse_tensor_to_dense(sparse_tensor, offset_tensor, max_num):
-#     dense_tensor = torch.zeros(
-#         size=(offset_tensor.shape[0] - 1, max_num, sparse_tensor.shape[-1]),
-#         dtype=sparse_tensor.dtype, device=sparse_tensor.device
-#     )
-#     COMMON_OPS.convert_sparse_tensor_to_dense(sparse_tensor, offset_tensor, dense_tensor)
-#     return dense_tensor

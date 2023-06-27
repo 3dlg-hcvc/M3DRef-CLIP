@@ -13,7 +13,6 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m){
     m.def("roipool_fp", &roipool_fp, "roipool_fp");
     m.def("roipool_bp", &roipool_bp, "roipool_bp");
     m.def("crop_pcds_from_aabbs", &cropPcdsFromAabbs, "crop_pcds_from_aabbs");
-    m.def("convert_sparse_tensor_to_dense", &convertSparseTensorToDense, "convert_sparse_tensor_to_dense");
     m.def("get_iou", &get_iou, "get_iou");
 
     // PointGroup
