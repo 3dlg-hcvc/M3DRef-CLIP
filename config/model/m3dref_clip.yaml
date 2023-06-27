@@ -28,7 +28,7 @@ network:
 #    dropout: 0.1
 
   gru_text_encoder:
-    _target_: multi3drefer.model.language_module.gru_text_encoder.GRUTextEncoder
+    _target_: m3drefclip.model.language_module.gru_text_encoder.GRUTextEncoder
     embedding_dim: ${data.lang_metadata.glove_embedding_len}
     gru_hidden_size: 256
     output_channel: 128
