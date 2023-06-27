@@ -63,6 +63,7 @@ class ScanRefer(GeneralDataset):
         )
         # data_dict["clip_tokens"] = torch.empty(size=(self.data_cfg.chunk_size, 77), dtype=torch.int32)
         data_dict["word_embeddings"] = []
+        data_dict["sentence_len"] = np.empty(shape=self.data_cfg.chunk_size, dtype=np.uint8)  # max 255
         data_dict["eval_type"] = []
 
         for i, index in enumerate(language_data_indices):
