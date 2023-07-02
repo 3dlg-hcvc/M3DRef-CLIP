@@ -1,7 +1,8 @@
 import json
-import clip
+# import clip
 import torch
 import numpy as np
+import pickle
 from m3drefclip.data.dataset.general_dataset import GeneralDataset
 
 
