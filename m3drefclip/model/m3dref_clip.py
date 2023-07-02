@@ -34,6 +34,11 @@ class M3DRefCLIP(pl.LightningModule):
                 cfg.model.loss.reference_ce_loss, chunk_size=cfg.data.chunk_size,
                 max_num_proposals=cfg.model.network.max_num_proposals
             )
+        elif self.dataset_name == "Multi3DRefer":
+            self.ref_loss = hydra.utils.instantiate(
+                cfg.model.loss.reference_bce_loss, chunk_size=cfg.data.chunk_size,
+                max_num_proposals=cfg.model.network.max_num_proposals
+            )
         else:
             raise NotImplementedError
 
@@ -191,6 +196,10 @@ class M3DRefCLIP(pl.LightningModule):
             pred_aabb_score_masks = (output_dict["pred_aabb_scores"].argmax(dim=1)).reshape(
                 shape=(batch_size, lang_chunk_size, -1)
             )
+        elif self.dataset_name == "Multi3DRefer":
+            pred_aabb_score_masks = (
+                    torch.sigmoid(output_dict["pred_aabb_scores"]) >= self.hparams.cfg.model.inference.output_threshold
+            ).reshape(shape=(batch_size, lang_chunk_size, -1))
         else:
             raise NotImplementedError
 
