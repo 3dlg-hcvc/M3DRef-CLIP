@@ -20,6 +20,8 @@ def generate_gt_scanrefer(split, lang_input_path, scene_root_path):
         if "object_ids" not in query:
             # for ScanRefer and Nr3D
             object_ids = [object_id]
+        else:
+            object_ids = query["object_ids"]
         corners = scene_data["aabb_corner_xyz"][np.in1d(scene_data["aabb_obj_ids"], np.array(object_ids))]
         aabb_min_max_bound = np.stack((corners.min(1), corners.max(1)), axis=1)
         gt_dict[(scene_id, object_id, int(query["ann_id"]))] = {
