@@ -20,7 +20,7 @@ class Multi3DReferEvaluator(GeneralEvaluator):
             with open(os.path.join(path, scene_file), "r") as f:
                 gt_json = json.load(f)
             for query in gt_json:
-                self.ground_truths[(scene_file[:-5], int(query["object_id"]), int(query["ann_id"]))] = {
+                self.ground_truths[(scene_file[:-5], 0, query["ann_id"])] = {
                     "aabb_bound": np.array(query["aabb_bound"], dtype=np.float32),
                     "eval_type": query["eval_type"]
                 }

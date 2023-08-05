@@ -30,7 +30,6 @@ class Multi3DRefer(GeneralDataset):
             object_name = item["object_name"].replace("_", " ")
             self.language_data[item["scene_id"]].append(
                 {
-                    "object_id": item["object_id"],
                     "object_ids": np.array(item["object_ids"], dtype=np.int16),
                     "object_name": object_name,
                     "ann_id": item["ann_id"],
@@ -62,7 +61,7 @@ class Multi3DRefer(GeneralDataset):
             real_idx = index % num_language_data_in_scene  # pad the last chunk
             data = language_data_in_scene[real_idx]
             data_dict["ann_id"][i] = data["ann_id"]
-            data_dict["object_id"][i] = data["object_id"]
+            data_dict["object_id"][i] = 0  # dummy value for multi3drefer dataset
             data_dict["gt_target_obj_id_mask"][i] = np.in1d(data_dict["gt_aabb_obj_ids"], data["object_ids"])
             data_dict["clip_tokens"][i] = data["clip_tokens"]
             data_dict["eval_type"].append(data["eval_type"])

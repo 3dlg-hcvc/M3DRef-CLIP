@@ -111,7 +111,6 @@ class M3DRefCLIP(pl.LightningModule):
 
     def _loss(self, data_dict, output_dict):
         loss_dict = self.detector.loss(data_dict, output_dict)
-
         # reference loss
         loss_dict["reference_loss"] = self.ref_loss(
             output_dict,
@@ -149,7 +148,6 @@ class M3DRefCLIP(pl.LightningModule):
     def validation_step(self, data_dict, idx):
         output_dict = self(data_dict)
         loss_dict = self._loss(data_dict, output_dict)
-
         # calculate the total loss and log
         total_loss = 0
         for loss_name, loss_value in loss_dict.items():
@@ -247,11 +245,18 @@ class M3DRefCLIP(pl.LightningModule):
                 np.linspace(min_point[:, 1], max_point[:, 1], 2),
                 np.linspace(min_point[:, 2], max_point[:, 2], 2)
             )).T.reshape(-1, 8, 3)
-            scene_pred[scene_id].append({
-                "object_id": key[1],
-                "ann_id": key[2],
-                "aabb": corners.tolist()
-            })
+
+            if self.dataset_name in ("ScanRefer", "Nr3D"):
+                scene_pred[scene_id].append({
+                    "object_id": key[1],
+                    "ann_id": key[2],
+                    "aabb": corners.tolist()
+                })
+            elif self.dataset_name == "Multi3DRefer":
+                scene_pred[scene_id].append({
+                    "ann_id": key[2],
+                    "aabb": corners.tolist()
+                })
         prediction_output_root_path = os.path.join(
             self.hparams.cfg.pred_path, self.hparams.cfg.data.inference.split
         )
