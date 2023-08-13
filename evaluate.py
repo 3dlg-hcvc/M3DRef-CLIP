@@ -101,7 +101,7 @@ def parse_prediction(scene_ids, pred_file_root_path):
         for scene_prediction in scene_predictions:
             corners = np.array(scene_prediction["aabb"], dtype=np.float32)
             if corners.shape[0] == 0:
-                corners = np.empty(shape=(0, 2, 3), dtype=np.float32)
+                corners = np.empty(shape=(0, 8, 3), dtype=np.float32)
             aabb_min_max_bound = np.stack((corners.min(1), corners.max(1)), axis=1)
             if "object_id" in scene_prediction:
                 object_id = int(scene_prediction["object_id"])
