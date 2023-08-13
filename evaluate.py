@@ -7,7 +7,7 @@ import csv
 import os
 
 
-def generate_gt_scanrefer(split, lang_input_path, scene_root_path):
+def generate_gt(split, lang_input_path, scene_root_path):
     gt_dict = {}
     scene_ids = {}
     with open(lang_input_path, "r") as f:
@@ -100,8 +100,8 @@ def main(cfg):
 
     assert os.path.exists(cfg.pred_path), f"Error: Predictions file path {cfg.pred_path} does not exist."
 
-    if cfg.data.lang_dataset == "ScanRefer":
-        gt_data, scene_ids = generate_gt_scanrefer(split, lang_input_path, cfg.data.scene_dataset_path)
+    if cfg.data.lang_dataset in ("ScanRefer", "Multi3DRefer"):
+        gt_data, scene_ids = generate_gt(split, lang_input_path, cfg.data.scene_dataset_path)
     elif cfg.data.lang_dataset == "Nr3D":
         gt_data, scene_ids = generate_gt_nr3d(split, lang_input_path, cfg.data.scene_dataset_path)
     else:
