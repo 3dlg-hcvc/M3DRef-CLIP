@@ -238,13 +238,16 @@ class M3DRefCLIP(pl.LightningModule):
             scene_id = key[0]
             if key[0] not in scene_pred:
                 scene_pred[scene_id] = []
-            min_point = value["aabb_bound"][:, 0]
-            max_point = value["aabb_bound"][:, 1]
-            corners = np.array(np.meshgrid(
-                np.linspace(min_point[:, 0], max_point[:, 0], 2),
-                np.linspace(min_point[:, 1], max_point[:, 1], 2),
-                np.linspace(min_point[:, 2], max_point[:, 2], 2)
-            )).T.reshape(-1, 8, 3)
+            corners = np.empty(shape=(value["aabb_bound"].shape[0], 8, 3), dtype=float32)
+            for i, aabb in enumerate(value["aabb_bound"]):
+                min_point = aabb[0]
+                max_point = aabb[1]
+                corners[i] = np.array([
+                    [x, y, z]
+                    for x in [min_point[0], max_point[0]]
+                    for y in [min_point[1], max_point[1]]
+                    for z in [min_point[2], max_point[2]]
+                ], dtype=np.float32)
 
             if self.dataset_name in ("ScanRefer", "Nr3D"):
                 scene_pred[scene_id].append({
