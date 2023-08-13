@@ -84,16 +84,8 @@ def parse_prediction(scene_ids, pred_file_root_path):
             scene_predictions = json.load(f)
         for scene_prediction in scene_predictions:
             corners = np.array(scene_prediction["aabb"], dtype=np.float32)
-            if corners.shape[0] == 0:
-                corners = np.empty(shape=(0, 2, 3), dtype=np.float32)
             aabb_min_max_bound = np.stack((corners.min(1), corners.max(1)), axis=1)
-            if "object_id" in scene_prediction:
-                # for ScanRefer or Nr3D
-                object_id = int(scene_prediction["object_id"])
-            else:
-                # for Multi3DRefer
-                object_id = 0
-            pred_dict[(scene_id, object_id, int(scene_prediction["ann_id"]))] = {
+            pred_dict[(scene_id, int(scene_prediction["object_id"]), int(scene_prediction["ann_id"]))] = {
                 "aabb_bound": aabb_min_max_bound
             }
     return pred_dict
