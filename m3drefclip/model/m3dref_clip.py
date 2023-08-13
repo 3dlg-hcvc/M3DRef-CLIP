@@ -238,7 +238,7 @@ class M3DRefCLIP(pl.LightningModule):
             scene_id = key[0]
             if key[0] not in scene_pred:
                 scene_pred[scene_id] = []
-            corners = np.empty(shape=(value["aabb_bound"].shape[0], 8, 3), dtype=float32)
+            corners = np.empty(shape=(value["aabb_bound"].shape[0], 8, 3), dtype=np.float32)
             for i, aabb in enumerate(value["aabb_bound"]):
                 min_point = aabb[0]
                 max_point = aabb[1]
