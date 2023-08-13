@@ -40,7 +40,7 @@ def generate_gt_multi3drefer(split, lang_input_path, scene_root_path):
         object_ids = query["object_ids"]
         corners = scene_data["aabb_corner_xyz"][np.in1d(scene_data["aabb_obj_ids"], np.array(object_ids))]
         aabb_min_max_bound = np.stack((corners.min(1), corners.max(1)), axis=1)
-        gt_dict[(scene_id, 0, int(query["ann_id"]))] = {
+        gt_dict[(scene_id, 0, query["ann_id"])] = {
             "aabb_bound": aabb_min_max_bound,
             "eval_type": query["eval_type"]
         }
