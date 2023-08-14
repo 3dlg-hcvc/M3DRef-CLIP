@@ -124,7 +124,7 @@ def main(cfg):
     assert os.path.exists(cfg.pred_path), f"Error: Predictions file path {cfg.pred_path} does not exist."
 
     if cfg.data.lang_dataset == "ScanRefer":
-        gt_data, scene_ids = generate_gt(split, lang_input_path, cfg.data.scene_dataset_path)
+        gt_data, scene_ids = generate_gt_scanrefer(split, lang_input_path, cfg.data.scene_dataset_path)
     elif cfg.data.lang_dataset == "Nr3D":
         gt_data, scene_ids = generate_gt_nr3d(split, lang_input_path, cfg.data.scene_dataset_path)
     elif cfg.data.lang_dataset == "Multi3DRefer":
