@@ -11,7 +11,7 @@ from m3drefclip.evaluation.general_evaluator import GeneralEvaluator
 class Multi3DReferEvaluator(GeneralEvaluator):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.evaluation_types = {"zt_wo_d": 3, "zt_w_d": 4, "st_wo_d": 0, "st_w_d": 1, "mt": 2}
+        self.evaluation_types = {"zt_w_d": 0, "zt_wo_d": 1, "st_w_d": 2, "st_wo_d": 3, "mt": 4}
 
     def _set_ground_truths_from_files(self, path):
         self.ground_truths = {}
@@ -39,7 +39,7 @@ class Multi3DReferEvaluator(GeneralEvaluator):
                 iou_25_f1_scores[i], iou_50_f1_scores[i] = self.evaluate_one_query(value, self.ground_truths[key])
         iou_25_results = {}
         iou_50_results = {}
-        for sub_group in ("zt_wo_d", "zt_w_d", "st_wo_d", "st_w_d", "mt"):
+        for sub_group in ("zt_w_d", "zt_wo_d", "st_w_d", "st_wo_d", "mt"):
             selected_indices = eval_type_mask == self.evaluation_types[sub_group]
             if np.any(selected_indices):
                 # micro-averaged scores of each semantic class and each subtype across queries
@@ -59,7 +59,7 @@ class Multi3DReferEvaluator(GeneralEvaluator):
     def _print_results(self, iou_25_results, iou_50_results):
         print(f"{'=' * 100}")
         print("{0:<12}{1:<12}{2:<12}{3:<12}{4:<12}{5:<12}{6:<12}"
-              .format("IoU", "zt_wo_d", "zt_w_d", "st_wo_d", "st_w_d", "mt", "overall"))
+              .format("IoU", "zt_w_d", "zt_wo_d", "st_w_d", "st_wo_d", "mt", "overall"))
         print(f"{'-' * 100}")
         line_1_str = '{:<12}'.format("0.25")
         for sub_group_type, score in iou_25_results.items():
