@@ -17,12 +17,30 @@ def generate_gt_scanrefer(split, lang_input_path, scene_root_path):
         scene_ids[scene_id] = True
         object_id = int(query["object_id"])
         scene_data = torch.load(os.path.join(scene_root_path, split, f"{scene_id}.pth"))
-        if "object_ids" not in query:
-            # for ScanRefer and Nr3D
-            object_ids = [object_id]
+        object_ids = [object_id]
         corners = scene_data["aabb_corner_xyz"][np.in1d(scene_data["aabb_obj_ids"], np.array(object_ids))]
         aabb_min_max_bound = np.stack((corners.min(1), corners.max(1)), axis=1)
         gt_dict[(scene_id, object_id, int(query["ann_id"]))] = {
+            "aabb_bound": aabb_min_max_bound,
+            "eval_type": query["eval_type"]
+        }
+    scene_ids = list(scene_ids.keys())
+    return gt_dict, scene_ids
+
+
+def generate_gt_multi3drefer(split, lang_input_path, scene_root_path):
+    gt_dict = {}
+    scene_ids = {}
+    with open(lang_input_path, "r") as f:
+        raw_data = json.load(f)
+    for query in tqdm(raw_data, desc="Initializing ground truths"):
+        scene_id = query["scene_id"]
+        scene_ids[scene_id] = True
+        scene_data = torch.load(os.path.join(scene_root_path, split, f"{scene_id}.pth"))
+        object_ids = query["object_ids"]
+        corners = scene_data["aabb_corner_xyz"][np.in1d(scene_data["aabb_obj_ids"], np.array(object_ids))]
+        aabb_min_max_bound = np.stack((corners.min(1), corners.max(1)), axis=1)
+        gt_dict[(scene_id, 0, query["ann_id"])] = {
             "aabb_bound": aabb_min_max_bound,
             "eval_type": query["eval_type"]
         }
@@ -82,8 +100,15 @@ def parse_prediction(scene_ids, pred_file_root_path):
             scene_predictions = json.load(f)
         for scene_prediction in scene_predictions:
             corners = np.array(scene_prediction["aabb"], dtype=np.float32)
+            if corners.shape[0] == 0:
+                corners = np.empty(shape=(0, 8, 3), dtype=np.float32)
             aabb_min_max_bound = np.stack((corners.min(1), corners.max(1)), axis=1)
-            pred_dict[(scene_id, int(scene_prediction["object_id"]), int(scene_prediction["ann_id"]))] = {
+            if "object_id" in scene_prediction:
+                object_id = int(scene_prediction["object_id"])
+            else:
+                # for Multi3DRefer, set a dummy object_id
+                object_id = 0
+            pred_dict[(scene_id, object_id, int(scene_prediction["ann_id"]))] = {
                 "aabb_bound": aabb_min_max_bound
             }
     return pred_dict
@@ -102,6 +127,8 @@ def main(cfg):
         gt_data, scene_ids = generate_gt_scanrefer(split, lang_input_path, cfg.data.scene_dataset_path)
     elif cfg.data.lang_dataset == "Nr3D":
         gt_data, scene_ids = generate_gt_nr3d(split, lang_input_path, cfg.data.scene_dataset_path)
+    elif cfg.data.lang_dataset == "Multi3DRefer":
+        gt_data, scene_ids = generate_gt_multi3drefer(split, lang_input_path, cfg.data.scene_dataset_path)
     else:
         raise NotImplementedError
 

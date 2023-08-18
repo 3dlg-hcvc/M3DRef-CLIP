@@ -60,5 +60,6 @@ lightning_logs/
 
 dataset/scanrefer/metadata/*
 dataset/nr3d/metadata/*
+dataset/multi3drefer/metadata/*
 
 benchmark

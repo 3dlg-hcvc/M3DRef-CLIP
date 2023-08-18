@@ -46,7 +46,7 @@ class ScanRefer(GeneralDataset):
         language_data_in_scene = self.language_data[scene_id]
         num_language_data_in_scene = len(language_data_in_scene)
 
-        data_dict["ann_id"] = np.empty(shape=self.data_cfg.chunk_size, dtype=np.uint8)
+        data_dict["ann_id"] = np.empty(shape=self.data_cfg.chunk_size, dtype=np.int32)
         data_dict["object_id"] = np.empty(shape=self.data_cfg.chunk_size, dtype=np.int16)
 
         data_dict["gt_target_obj_id_mask"] = np.zeros(

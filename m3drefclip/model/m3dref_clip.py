@@ -34,6 +34,11 @@ class M3DRefCLIP(pl.LightningModule):
                 cfg.model.loss.reference_ce_loss, chunk_size=cfg.data.chunk_size,
                 max_num_proposals=cfg.model.network.max_num_proposals
             )
+        elif self.dataset_name == "Multi3DRefer":
+            self.ref_loss = hydra.utils.instantiate(
+                cfg.model.loss.reference_bce_loss, chunk_size=cfg.data.chunk_size,
+                max_num_proposals=cfg.model.network.max_num_proposals
+            )
         else:
             raise NotImplementedError
 
@@ -106,7 +111,6 @@ class M3DRefCLIP(pl.LightningModule):
 
     def _loss(self, data_dict, output_dict):
         loss_dict = self.detector.loss(data_dict, output_dict)
-
         # reference loss
         loss_dict["reference_loss"] = self.ref_loss(
             output_dict,
@@ -144,7 +148,6 @@ class M3DRefCLIP(pl.LightningModule):
     def validation_step(self, data_dict, idx):
         output_dict = self(data_dict)
         loss_dict = self._loss(data_dict, output_dict)
-
         # calculate the total loss and log
         total_loss = 0
         for loss_name, loss_value in loss_dict.items():
@@ -191,6 +194,10 @@ class M3DRefCLIP(pl.LightningModule):
             pred_aabb_score_masks = (output_dict["pred_aabb_scores"].argmax(dim=1)).reshape(
                 shape=(batch_size, lang_chunk_size, -1)
             )
+        elif self.dataset_name == "Multi3DRefer":
+            pred_aabb_score_masks = (
+                    torch.sigmoid(output_dict["pred_aabb_scores"]) >= self.hparams.cfg.model.inference.output_threshold
+            ).reshape(shape=(batch_size, lang_chunk_size, -1))
         else:
             raise NotImplementedError
 
@@ -231,18 +238,28 @@ class M3DRefCLIP(pl.LightningModule):
             scene_id = key[0]
             if key[0] not in scene_pred:
                 scene_pred[scene_id] = []
-            min_point = value["aabb_bound"][:, 0]
-            max_point = value["aabb_bound"][:, 1]
-            corners = np.array(np.meshgrid(
-                np.linspace(min_point[:, 0], max_point[:, 0], 2),
-                np.linspace(min_point[:, 1], max_point[:, 1], 2),
-                np.linspace(min_point[:, 2], max_point[:, 2], 2)
-            )).T.reshape(-1, 8, 3)
-            scene_pred[scene_id].append({
-                "object_id": key[1],
-                "ann_id": key[2],
-                "aabb": corners.tolist()
-            })
+            corners = np.empty(shape=(value["aabb_bound"].shape[0], 8, 3), dtype=np.float32)
+            for i, aabb in enumerate(value["aabb_bound"]):
+                min_point = aabb[0]
+                max_point = aabb[1]
+                corners[i] = np.array([
+                    [x, y, z]
+                    for x in [min_point[0], max_point[0]]
+                    for y in [min_point[1], max_point[1]]
+                    for z in [min_point[2], max_point[2]]
+                ], dtype=np.float32)
+
+            if self.dataset_name in ("ScanRefer", "Nr3D"):
+                scene_pred[scene_id].append({
+                    "object_id": key[1],
+                    "ann_id": key[2],
+                    "aabb": corners.tolist()
+                })
+            elif self.dataset_name == "Multi3DRefer":
+                scene_pred[scene_id].append({
+                    "ann_id": key[2],
+                    "aabb": corners.tolist()
+                })
         prediction_output_root_path = os.path.join(
             self.hparams.cfg.pred_path, self.hparams.cfg.data.inference.split
         )

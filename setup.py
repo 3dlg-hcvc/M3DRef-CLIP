@@ -8,7 +8,7 @@ setup(
     description="M3DRef-CLIP",
     packages=find_packages(include=("m3drefclip*")),
     install_requires=[
-        f"clip @ git+ssh://git@github.com/eamonn-zh/CLIP.git", "lightning", "wandb", "scipy", "hydra-core",
+        f"clip @ git+ssh://git@github.com/eamonn-zh/CLIP.git", "lightning==2.0.6", "wandb==0.15.8", "scipy", "hydra-core",
         "h5py", "open3d", "pandas"
     ]
 )

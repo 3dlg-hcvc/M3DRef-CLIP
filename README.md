@@ -6,7 +6,7 @@
 
 This is the official implementation for M3DRef-CLIP.
 
-![Model Architecture](./docs/img/model_arch.png)
+![Model Architecture](./docs/img/model_arch.jpg)
 
 ## Requirement
 This repo contains [CUDA](https://developer.nvidia.com/cuda-zone) implementation, please make sure your [GPU compute capability](https://developer.nvidia.com/cuda-gpus) is at least 3.0 or above.
@@ -128,6 +128,18 @@ Note: Both [ScanRefer](https://daveredrum.github.io/ScanRefer/) and [Nr3D](https
     python dataset/nr3d/add_evaluation_labels.py data=nr3d
     ```
 
+### Multi3DRefer dataset
+1. Downloading link is coming soon. The raw dataset files should be organized as follows:
+    ```shell
+    m3drefclip # project root
+    ├── dataset
+    │   ├── multi3drefer
+    │   │   ├── metadata
+    │   │   │   ├── multi3drefer_train.json
+    │   │   │   ├── multi3drefer_val.json
+    │   │   │   ├── multi3drefer_test.json
+    ```
+
 ### Pre-trained detector
 We pre-trained [PointGroup](https://arxiv.org/abs/2004.01658) implemented in [MINSU3D](https://github.com/3dlg-hcvc/minsu3d/) on [ScanNet v2](http://www.scan-net.org/) and use it as the detector. We use coordinates + colors + multi-view features as inputs.
 1. Download the [pre-trained detector](https://aspis.cmpt.sfu.ca/projects/m3dref-clip/pretrain/pointgroup_best.ckpt). The detector checkpoint file should be organized as follows:
@@ -144,19 +156,19 @@ Note: Configuration files are managed by [Hydra](https://hydra.cc/), you can eas
 wandb login
 
 # train a model with the pre-trained detector, using predicted object proposals
-python train.py data={scanrefer/nr3d} experiment_name={any_string} +detector_path=checkpoints/PointGroup_ScanNet.ckpt
+python train.py data={scanrefer/nr3d/multi3drefer} experiment_name={any_string} +detector_path=checkpoints/PointGroup_ScanNet.ckpt
 
 # train a model with the pretrained detector, using GT object proposals
-python train.py data={scanrefer/nr3d} experiment_name={any_string} +detector_path=checkpoints/PointGroup_ScanNet.ckpt model.network.detector.use_gt_proposal=True
+python train.py data={scanrefer/nr3d/multi3drefer} experiment_name={any_string} +detector_path=checkpoints/PointGroup_ScanNet.ckpt model.network.detector.use_gt_proposal=True
 
 # train a model from a checkpoint, it restores all hyperparameters in the .ckpt file
-python train.py data={scanrefer/nr3d} experiment_name={checkpoint_experiment_name} +ckpt_path={ckpt_file_path}
+python train.py data={scanrefer/nr3d/multi3drefer} experiment_name={checkpoint_experiment_name} +ckpt_path={ckpt_file_path}
 
 # test a model from a checkpoint and save its predictions
-python test.py data={scanrefer/nr3d} data.inference.split={train/val/test} +ckpt_path={ckpt_file_path} pred_path={predictions_path}
+python test.py data={scanrefer/nr3d/multi3drefer} data.inference.split={train/val/test} +ckpt_path={ckpt_file_path} pred_path={predictions_path}
 
 # evaluate predictions
-python evaluate.py data={scanrefer/nr3d} pred_path={predictions_path} data.evaluation.split={train/val/test}
+python evaluate.py data={scanrefer/nr3d/multi3drefer} pred_path={predictions_path} data.evaluation.split={train/val/test}
 ```
 ## Checkpoints
 ### ScanRefer dataset
@@ -164,10 +176,12 @@ python evaluate.py data={scanrefer/nr3d} pred_path={predictions_path} data.evalu
 
 Performance:
 
-| Split | Unique@0.25 | Unique@0.5 | Multiple@0.25 | Multiple@0.5 | Overall@0.25 | Overall@0.5 |
-|:------|:------------|:-----------|:--------------|:-------------|:-------------|:------------|
-| Val   | 85.3        | 77.2       | 43.8          | 36.8         | 51.9         | 44.7        |
-| Test  | 79.8        | 70.9       | 46.9          | 38.1         | 54.3         | 45.5        |
+| Split | IoU  | Unique | Multiple | Overall | 
+|:------|:-----|:-------|:---------|:--------|
+| Val   | 0.25 | 85.3   | 43.8     | 51.9    |
+| Val   | 0.5  | 77.2   | 36.8     | 44.7    |
+| Test  | 0.25 | 79.8   | 46.9     | 54.3    |
+| Test  | 0.5  | 70.9   | 38.1     | 45.5    |
 
 ### Nr3D dataset
 [M3DRef-CLIP_Nr3d.ckpt](https://aspis.cmpt.sfu.ca/projects/m3dref-clip/pretrain/M3DRef-CLIP_Nr3D.ckpt)
@@ -177,6 +191,15 @@ Performance:
 | Split | Easy | Hard | View-dep | View-indep | Overall |
 |:------|:-----|:-----|:---------|:-----------|:--------|
 | Test  | 55.6 | 43.4 | 42.3     | 52.9       | 49.4    |
+
+## Multi3DRefer dataset
+[M3DRef-CLIP_Multi3DRefer.ckpt](https://aspis.cmpt.sfu.ca/projects/m3dref-clip/pretrain/M3DRef-CLIP_Multi3DRefer.ckpt)
+
+| Split | IoU  | ZT w/ D | ZT w/o D | ST w/ D | ST w/o D | MT   | Overall |
+|:------|:-----|:--------|:---------|:--------|:---------|:-----|:--------|
+| Val   | 0.25 | 39.4   | 81.8     | 34.6    | 53.5     | 43.6 | 42.8    |
+| Val   | 0.5  | 39.4   | 81.8     | 30.6    | 47.8     | 37.9 | 38.4    |
+     
 
 ## Benchmark
 ### ScanRefer
