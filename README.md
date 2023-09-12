@@ -4,7 +4,7 @@
 <a href="https://pytorchlightning.ai/"><img alt="Lightning" src="https://img.shields.io/badge/Lightning-792DE4?style=for-the-badge&logo=pytorch-lightning&logoColor=white"></a>
 <a href="https://wandb.ai/site"><img alt="WandB" src="https://img.shields.io/badge/Weights_&_Biases-FFBE00?style=for-the-badge&logo=WeightsAndBiases&logoColor=white"></a>
 
-This is the official implementation for M3DRef-CLIP.
+This is the official implementation for [Multi3DRefer: Grounding Text Description to Multiple 3D Objects](https://3dlg-hcvc.github.io/multi3drefer/).
 
 ![Model Architecture](./docs/img/model_arch.jpg)
 
