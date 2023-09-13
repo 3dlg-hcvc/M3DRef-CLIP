@@ -15,7 +15,7 @@ scene_metadata:
 
   label_mapping_file: ${data.scene_metadata.metadata_root_path}/scannetv2-labels.combined.tsv
   semantic_mapping_name: "nyu40"
-  invalid_semantic_labels: [1，2]
+  invalid_semantic_labels: [1, 2]
   valid_semantic_mapping: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 16, 24, 28, 33, 34, 36, 39]  # skip floor, wall and ceiling
   scene_multiview_file: ${data.scene_dataset_path}/enet_feats_maxpool.hdf5
 
