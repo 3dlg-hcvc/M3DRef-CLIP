@@ -194,6 +194,8 @@ Performance:
 ### Multi3DRefer dataset
 [M3DRef-CLIP_Multi3DRefer.ckpt](https://aspis.cmpt.sfu.ca/projects/m3dref-clip/pretrain/M3DRef-CLIP_Multi3DRefer.ckpt)
 
+Performance:
+
 | Split | IoU  | ZT w/ D | ZT w/o D | ST w/ D | ST w/o D | MT   | Overall |
 |:------|:-----|:--------|:---------|:--------|:---------|:-----|:--------|
 | Val   | 0.25 | 39.4   | 81.8     | 34.6    | 53.5     | 43.6 | 42.8    |
