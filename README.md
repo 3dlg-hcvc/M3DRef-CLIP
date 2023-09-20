@@ -129,7 +129,7 @@ Note: Both [ScanRefer](https://daveredrum.github.io/ScanRefer/) and [Nr3D](https
     ```
 
 ### Multi3DRefer dataset
-1. Downloading link is coming soon. The raw dataset files should be organized as follows:
+1. Downloading the [Multi3DRefer dataset (train/val)](https://aspis.cmpt.sfu.ca/projects/multi3drefer/data/multi3drefer_train_val.zip). The raw dataset files should be organized as follows:
     ```shell
     m3drefclip # project root
     ├── dataset
@@ -137,7 +137,6 @@ Note: Both [ScanRefer](https://daveredrum.github.io/ScanRefer/) and [Nr3D](https
     │   │   ├── metadata
     │   │   │   ├── multi3drefer_train.json
     │   │   │   ├── multi3drefer_val.json
-    │   │   │   ├── multi3drefer_test.json
     ```
 
 ### Pre-trained detector
