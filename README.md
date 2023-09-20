@@ -191,7 +191,7 @@ Performance:
 |:------|:-----|:-----|:---------|:-----------|:--------|
 | Test  | 55.6 | 43.4 | 42.3     | 52.9       | 49.4    |
 
-## Multi3DRefer dataset
+### Multi3DRefer dataset
 [M3DRef-CLIP_Multi3DRefer.ckpt](https://aspis.cmpt.sfu.ca/projects/m3dref-clip/pretrain/M3DRef-CLIP_Multi3DRefer.ckpt)
 
 | Split | IoU  | ZT w/ D | ZT w/o D | ST w/ D | ST w/o D | MT   | Overall |
