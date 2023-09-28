@@ -141,7 +141,7 @@ Note: Both [ScanRefer](https://daveredrum.github.io/ScanRefer/) and [Nr3D](https
 
 ### Pre-trained detector
 We pre-trained [PointGroup](https://arxiv.org/abs/2004.01658) implemented in [MINSU3D](https://github.com/3dlg-hcvc/minsu3d/) on [ScanNet v2](http://www.scan-net.org/) and use it as the detector. We use coordinates + colors + multi-view features as inputs.
-1. Download the [pre-trained detector](https://aspis.cmpt.sfu.ca/projects/m3dref-clip/pretrain/pointgroup_best.ckpt). The detector checkpoint file should be organized as follows:
+1. Download the [pre-trained detector](https://aspis.cmpt.sfu.ca/projects/m3dref-clip/pretrain/PointGroup_ScanNet.ckpt). The detector checkpoint file should be organized as follows:
     ```shell
     m3drefclip # project root
     ├── checkpoints
