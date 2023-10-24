@@ -93,10 +93,13 @@ Note: Both [ScanRefer](https://daveredrum.github.io/ScanRefer/) and [Nr3D](https
     python dataset/scannetv2/preprocess_all_data.py data=scannetv2 +workers={cpu_count}
     ```
 
-3. Pre-process the multiview features from ENet: Please refer to the 5th instruction in [D3Net's repo](https://github.com/daveredrum/D3Net#data-preparation) to generate `enet_feats_maxpool.hdf5` or directly [download](https://aspis.cmpt.sfu.ca/projects/m3dref-clip/data/enet_feats_maxpool.hdf5) it, then put it under `m3drefclip/dataset/scannetv2`
+3. Pre-process the multiview features from ENet: Please refer to the instructions in [ScanRefer's repo](https://github.com/daveredrum/ScanRefer#data-preparation) with one modification:
+   - comment out lines 51 to 56 in [batch_load_scannet_data.py](https://github.com/daveredrum/ScanRefer/blob/master/data/scannet/batch_load_scannet_data.py#L51-L56) since we follow D3Net's setting that doesn't do point downsampling here.
+
+   Then put the generated `enet_feats_maxpool.hdf5` (116GB) under `m3drefclip/dataset/scannetv2`
 
 ### ScanRefer dataset
-1. Download the [ScanRefer dataset (train/val)](https://daveredrum.github.io/ScanRefer/). Also download the [test set](http://kaldir.vc.in.tum.de/scanrefer_benchmark_data.zip). The raw dataset files should be organized as follows:
+1. Download the [ScanRefer dataset (train/val)](https://daveredrum.github.io/ScanRefer/). Also, download the [test set](http://kaldir.vc.in.tum.de/scanrefer_benchmark_data.zip). The raw dataset files should be organized as follows:
     ```shell
     m3drefclip # project root
     ├── dataset
