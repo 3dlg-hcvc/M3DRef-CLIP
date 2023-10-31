@@ -164,10 +164,10 @@ python train.py data={scanrefer/nr3d/multi3drefer} experiment_name={any_string} 
 python train.py data={scanrefer/nr3d/multi3drefer} experiment_name={any_string} +detector_path=checkpoints/PointGroup_ScanNet.ckpt model.network.detector.use_gt_proposal=True
 
 # train a model from a checkpoint, it restores all hyperparameters in the .ckpt file
-python train.py data={scanrefer/nr3d/multi3drefer} experiment_name={checkpoint_experiment_name} +ckpt_path={ckpt_file_path}
+python train.py data={scanrefer/nr3d/multi3drefer} experiment_name={checkpoint_experiment_name} ckpt_path={ckpt_file_path}
 
 # test a model from a checkpoint and save its predictions
-python test.py data={scanrefer/nr3d/multi3drefer} data.inference.split={train/val/test} +ckpt_path={ckpt_file_path} pred_path={predictions_path}
+python test.py data={scanrefer/nr3d/multi3drefer} data.inference.split={train/val/test} ckpt_path={ckpt_file_path} pred_path={predictions_path}
 
 # evaluate predictions
 python evaluate.py data={scanrefer/nr3d/multi3drefer} pred_path={predictions_path} data.evaluation.split={train/val/test}
