@@ -209,7 +209,7 @@ Performance:
 ### ScanRefer
 Convert M3DRef-CLIP predictions to [ScanRefer benchmark format](https://kaldir.vc.in.tum.de/scanrefer_benchmark/documentation):
 ```shell
-python dataset/scanrefer/convert_output_to_benchmark_format.py data=scanrefer +pred_path={predictions_path} +output_path={output_file_path}
+python dataset/scanrefer/convert_output_to_benchmark_format.py data=scanrefer pred_path={predictions_path} +output_path={output_file_path}
 ```
 ### Nr3D
 Please refer to [ReferIt3D benchmark](https://referit3d.github.io/benchmarks.html) to report results.
